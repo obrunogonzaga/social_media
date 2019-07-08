@@ -53,10 +53,13 @@ def after_request(response):
 
 if __name__ == '__main__':
     models.initialize()
-    models.User.create_user(
+    try:
+        models.User.create_user(
         username='brunogsantos',
         email='brunog86@gmail.com',
         password='password',
         admin=True
     )
+    except ValueError:
+        pass
     app.run(debug=DEBUG, host=HOST, port=PORT)

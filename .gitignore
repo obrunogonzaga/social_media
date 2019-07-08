@@ -1,2 +1,4 @@
 .vscode/
 sm/
+__pycache__/
+social.db
