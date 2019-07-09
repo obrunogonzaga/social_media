@@ -42,7 +42,7 @@ class Post(Model):
     timestamp = DateTimeField(default=datetime.datetime.now)
     user = ForeignKeyField(
         User, 
-        related_name='posts')
+        backref='posts')
     content = TextField()
 
     class Meta:

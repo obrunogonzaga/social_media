@@ -67,6 +67,10 @@
 
               <a href="{{ url_for('index') }}">All</a>
 
+              {% if current_user.is_authenticated  %}
+                <a href="{{ url_for('post') }}" class="new">Create New Post</a>
+              {% endif %}
+
             </nav>
 
             {% block content %}{% endblock %}
