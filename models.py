@@ -25,16 +25,37 @@ class User(UserMixin ,Model):
             (Post.user == self)
         )
 
+    def following(self):
+        """The users that are we following"""
+        return (
+            User.select().join(
+                Relationship, on=Relationship.to_user
+            ).where(
+                Relationship.from_user == self
+            )
+        )
+    
+    def followers(self):
+        """Get users following the current user"""
+        return (
+            User.select().join(
+                Relationship, on=Relationship.from_user
+            ).where(
+                Relationship.to_user == self
+            )
+        )
+
 
     @classmethod
     def create_user(cls, username, email, password, admin=False):
         try:
-            cls.create(
-                username=username,
-                email=email,
-                password=generate_password_hash(password),
-                is_admin=admin
-            )
+            with DATABASE.transaction():
+                cls.create(
+                    username=username,
+                    email=email,
+                    password=generate_password_hash(password),
+                    is_admin=admin
+                )
         except IntegrityError:
             raise ValueError('User already exists')
 
@@ -49,8 +70,17 @@ class Post(Model):
         database = DATABASE
         order_by = ('-timestamp',)
 
+class Relationship(Model):
+    from_user = ForeignKeyField(User, related_name='relationships')
+    to_user = ForeignKeyField(User, related_name='related_to')
+
+    class Meta:
+        database = DATABASE
+        indexes = (
+            (('from_user', "to_user"), True)
+        )
 
 def initialize():
     DATABASE.connect()
-    DATABASE.create_tables([User], safe=True)
+    DATABASE.create_tables([User, Post, Relationship], safe=True)
     DATABASE.close()

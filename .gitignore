@@ -2,3 +2,4 @@
 sm/
 __pycache__/
 social.db
+.DS_Store
