@@ -1,4 +1,4 @@
-from flask import (Flask, g, render_template, flash, redirect, url_for)
+from flask import (Flask, g, render_template, flash, redirect, url_for, abort)
 from flask_bcrypt import check_password_hash
 from flask_login import (LoginManager, login_user, logout_user, login_required, 
                          current_user)
@@ -88,9 +88,13 @@ def index():
 def stream(username=None):
     template = 'stream.html'
     if username and username != current_user.username:
-        # '**' comparação sem levar em conta letra capitalizadas
-        user = models.User.select().where(models.User.username**username).get()
-        stream = user.posts.limit(100)
+        try:
+            # '**' comparação sem levar em conta letra capitalizadas
+            user = models.User.select().where(models.User.username**username).get()
+        except models.DoesNotExist:
+            abort(404)
+        else:
+            stream = user.posts.limit(100)
     else:
         stream = current_user.get_stream().limit(100)
         user = current_user
@@ -101,6 +105,8 @@ def stream(username=None):
 @app.route('/post/<int:post_id>')
 def view_post(post_id):
     posts = models.Post.select().where(models.Post.id == post_id)
+    if posts.count() == 0:
+        abort(404)
     return render_template('stream.html', stream=posts)
 
 @app.route('/follow/<username>')
@@ -109,7 +115,7 @@ def follow(username):
     try:
         to_user = models.User.get(models.User.username**username)
     except models.DoesNotExist:
-        pass
+        abort(404)
     else:
         try:
             models.Relationship.create(
@@ -128,7 +134,7 @@ def unfollow(username):
     try:
         to_user = models.User.get(models.User.username**username)
     except models.DoesNotExist:
-        pass
+        abort(404)
     else:
         try:
             models.Relationship.get(
@@ -140,6 +146,10 @@ def unfollow(username):
         else:
             flash("You're now unfollowed!".format(to_user.username), "success")
         return redirect(url_for('stream', username=to_user.username))
+
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('404.html'), 404
 
 @app.after_request
 def after_request(response):
