@@ -17,8 +17,9 @@ class RegisterForm(FlaskForm):
     username = StringField(
         'Username',
         validators=[DataRequired(),
-        Regexp(r'ˆ[a-zA-Z0-9_]+$',
-        message=("Username should be one word, letters, "
+        Regexp(
+            r'^[a-zA-Z0-9_]+$',
+            message=("Username should be one word, letters, "
                  "numbers, and underscore only.")),
         name_exists]
     )

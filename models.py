@@ -45,7 +45,6 @@ class User(UserMixin ,Model):
             )
         )
 
-
     @classmethod
     def create_user(cls, username, email, password, admin=False):
         try:
@@ -77,7 +76,7 @@ class Relationship(Model):
     class Meta:
         database = DATABASE
         indexes = (
-            (('from_user', "to_user"), True)
+            (('from_user', 'to_user'), True),
         )
 
 def initialize():
